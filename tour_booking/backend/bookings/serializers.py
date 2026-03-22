@@ -1,7 +1,5 @@
 from rest_framework import serializers
 from .models import Booking
-
-# 👇 THIS is the connection
 from tours.serializers import TourSerializer
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -9,4 +7,4 @@ class BookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = '__all__'
+        fields = ['id', 'tour', 'number_of_people', 'is_cancelled', 'created_at']

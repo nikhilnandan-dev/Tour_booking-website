@@ -43,7 +43,7 @@ function Payment() {
 
     const date = new Date().toLocaleString();
 
-   const qrData = `BOOKING_ID:${bookingId}`;
+   const qrData = `${bookingId}`;
     const qrImage = await QRCode.toDataURL(qrData);
 
     // Header

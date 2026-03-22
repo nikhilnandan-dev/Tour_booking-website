@@ -1,51 +1,61 @@
 import { useState } from "react";
 import axios from "axios";
-import QrReader from "react-qr-reader";
 
 function Scan() {
+  const [bookingId, setBookingId] = useState("");
   const [result, setResult] = useState(null);
 
-  const handleScan = async (data) => {
-    if (data) {
-      const bookingId = data.replace("BOOKING_ID:", "");
+  const verifyBooking = async () => {
+    if (!bookingId) return;
 
-      try {
-        const res = await axios.get(
-          `http://127.0.0.1:8000/api/bookings/verify/${bookingId}/`
-        );
+    try {
+      const res = await axios.get(
+        `http://127.0.0.1:8000/api/bookings/verify/${bookingId}/`
+      );
 
-        setResult(res.data);
-
-      } catch (err) {
-        setResult({ valid: false });
-      }
+      setResult(res.data);
+    } catch {
+      setResult({ valid: false });
     }
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2>Scan Ticket</h2>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
 
-      <QrReader
-        delay={300}
-        onScan={handleScan}
-        onError={(err) => console.log(err)}
-        style={{ width: "300px" }}
+      <h2 className="text-xl font-bold mb-4">Verify Ticket</h2>
+
+      <input
+        type="text"
+        placeholder="Enter Booking ID"
+        value={bookingId}
+        onChange={(e) => setBookingId(e.target.value)}
+        className="border p-2 rounded w-64 text-center"
       />
 
+      <button
+        onClick={verifyBooking}
+        className="bg-blue-600 text-white px-4 py-2 mt-3 rounded"
+      >
+        Verify
+      </button>
+
       {result && (
-        <div style={{ marginTop: "20px" }}>
-          {result.valid ? (
-            <div style={{ color: "green" }}>
-              <h3>Valid Ticket</h3>
-              <p>{result.tour}</p>
-              <p>{result.user}</p>
-            </div>
-          ) : (
-            <h3 style={{ color: "red" }}>Invalid Ticket</h3>
-          )}
-        </div>
-      )}
+  <div className="mt-6 text-center">
+    {result.valid ? (
+      <div className="text-green-600">
+        <h3 className="font-bold">Valid Ticket</h3>
+        <p>{result.tour}</p>
+        <p>{result.user}</p>
+      </div>
+    ) : (
+      <div className="text-red-600">
+        <h3 className="font-bold">Invalid Ticket</h3>
+        <p>{result.reason}</p>
+      </div>
+    )}
+  </div>
+)}
+
     </div>
   );
 }

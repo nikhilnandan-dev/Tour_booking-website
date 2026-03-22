@@ -8,8 +8,11 @@ class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     tour = models.ForeignKey(Tour, on_delete=models.CASCADE)
     number_of_people = models.IntegerField()
+    is_cancelled = models.BooleanField(default=False)
+    is_used = models.BooleanField(default=False)
     booking_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, default='confirmed')
+    created_at = models.DateTimeField(auto_now_add=True) 
 
     def save(self, *args, **kwargs):
         if not self.booking_id:
@@ -18,3 +21,5 @@ class Booking(models.Model):
 
     def __str__(self):
         return self.booking_id
+    
+    

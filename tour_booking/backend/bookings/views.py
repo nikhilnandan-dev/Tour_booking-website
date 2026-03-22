@@ -4,12 +4,30 @@ from rest_framework.response import Response
 from .models import Booking
 from .serializers import BookingSerializer
 from tours.models import Tour
-from tours.serializers import TourSerializer
+
 
 @api_view(['GET'])
 def verify_booking(request, booking_id):
     try:
         booking = Booking.objects.get(id=booking_id)
+
+        # ❌ Cancelled
+        if booking.is_cancelled:
+            return Response({
+                "valid": False,
+                "reason": "Booking Cancelled"
+            }, status=400)
+
+        # ❌ Already used
+        if booking.is_used:
+            return Response({
+                "valid": False,
+                "reason": "Already Used"
+            }, status=400)
+
+        # ✅ Mark as used
+        booking.is_used = True
+        booking.save()
 
         return Response({
             "valid": True,
@@ -20,20 +38,27 @@ def verify_booking(request, booking_id):
 
     except Booking.DoesNotExist:
         return Response({
-            "valid": False
+            "valid": False,
+            "reason": "Booking Not Found"
         }, status=404)
-        
+
+# ❌ CANCEL BOOKING (NOT DELETE)
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_booking(request, booking_id):
     try:
         booking = Booking.objects.get(id=booking_id, user=request.user)
-        booking.delete()
-        return Response({"message": "Booking deleted"})
+
+        booking.is_cancelled = True
+        booking.save()
+
+        return Response({"message": "Booking cancelled"})
+
     except Booking.DoesNotExist:
         return Response({"error": "Booking not found"}, status=404)
-    
 
+
+# 📋 GET USER BOOKINGS
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_bookings(request):
@@ -41,6 +66,8 @@ def my_bookings(request):
     serializer = BookingSerializer(bookings, many=True)
     return Response(serializer.data)
 
+
+# ➕ CREATE BOOKING
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_booking(request):
