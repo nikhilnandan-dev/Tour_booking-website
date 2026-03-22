@@ -6,7 +6,23 @@ from .serializers import BookingSerializer
 from tours.models import Tour
 from tours.serializers import TourSerializer
 
+@api_view(['GET'])
+def verify_booking(request, booking_id):
+    try:
+        booking = Booking.objects.get(id=booking_id)
 
+        return Response({
+            "valid": True,
+            "tour": booking.tour.name,
+            "user": booking.user.username,
+            "people": booking.number_of_people
+        })
+
+    except Booking.DoesNotExist:
+        return Response({
+            "valid": False
+        }, status=404)
+        
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_booking(request, booking_id):

@@ -4,6 +4,7 @@ import Tours from "./pages/Tours";
 import MyBookings from "./pages/MyBookings";
 import Navbar from "./components/Navbar";
 import { useLocation } from "react-router-dom";
+import Payment from "./pages/Payment";
 
 function App() {
   const location = useLocation();
@@ -14,6 +15,7 @@ function App() {
       <Route path="/" element={<Login />} />
       <Route path="/tours" element={<Tours />} />
       <Route path="/bookings" element={<MyBookings />} />
+      <Route path="/payment" element={<Payment />} />
     </Routes>
     </> 
   );

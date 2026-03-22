@@ -60,53 +60,52 @@ function MyBookings() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>My Bookings</h2>
+  <div className="min-h-screen bg-gray-100 p-6">
+    <div className="max-w-4xl mx-auto">
+
+      <h2 className="text-2xl font-bold mb-4">My Bookings</h2>
 
       {bookings.length === 0 ? (
-        <p>No bookings yet</p>
+        <p className="text-gray-600">No bookings yet</p>
       ) : (
-        bookings.map((b) => (
-          <div
-            key={b.id}
-            style={{
-              border: "1px solid #ddd",
-              padding: "15px",
-              marginBottom: "15px",
-              borderRadius: "10px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-            }}
-          >
-            <h3>{b.tour?.name}</h3>
-            <p>Price: ₹{b.tour?.price}</p>
-            <p>People: {b.number_of_people}</p>
-
-            <button
-              onClick={() => {
-                const confirmDelete = window.confirm(
-                  "Are you sure you want to cancel this booking?"
-                );
-                if (confirmDelete) {
-                  deleteBooking(b.id);
-                }
-              }}
-              style={{
-                marginTop: "10px",
-                padding: "6px 10px",
-                backgroundColor: "red",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer"
-              }}
+        <div className="grid gap-4">
+          {bookings.map((b) => (
+            <div
+              key={b.id}
+              className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition"
             >
-              Cancel Booking
-            </button>
-          </div>
-        ))
+              <h3 className="text-lg font-semibold">
+                {b.tour?.name}
+              </h3>
+
+              <p className="text-gray-600">
+                ₹{b.tour?.price}
+              </p>
+
+              <p className="text-sm text-gray-500">
+                People: {b.number_of_people}
+              </p>
+
+              <button
+                onClick={() => {
+                  const confirmDelete = window.confirm(
+                    "Cancel this booking?"
+                  );
+                  if (confirmDelete) {
+                    deleteBooking(b.id);
+                  }
+                }}
+                className="mt-3 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              >
+                Cancel Booking
+              </button>
+            </div>
+          ))}
+        </div>
       )}
     </div>
-  );
+  </div>
+);
 }
 
 export default MyBookings;  

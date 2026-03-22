@@ -1,6 +1,6 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-const Navbar = () => {
+function Navbar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -9,40 +9,36 @@ const Navbar = () => {
   };
 
   return (
-    <div 
-    style={{
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "12px 20px",
-  backgroundColor: "#111",
-  color: "#fff"
-}}>
+    <nav className="bg-white shadow-md px-6 py-3 flex justify-between items-center">
+      
+      <h1 className="text-xl font-bold text-blue-600">
+        TourApp
+      </h1>
 
-      <h3>Tour App</h3>
+      <div className="flex gap-4 items-center">
+        <Link
+          to="/tours"
+          className="text-gray-700 hover:text-blue-600"
+        >
+          Tours
+        </Link>
 
-      <div>
+        <Link
+          to="/bookings"
+          className="text-gray-700 hover:text-blue-600"
+        >
+          My Bookings
+        </Link>
+
         <button
-  style={{ marginRight: "10px" }}
-  onClick={() => navigate("/tours")}
->
-  Tours
-</button>
-<button
-  style={{ marginRight: "10px" }}
-  onClick={() => navigate("/bookings")}
->
-  My Bookings
-</button>
-<button
-  style={{ backgroundColor: "red", color: "white" }}
-  onClick={handleLogout}
->
-  Logout
-</button>
+          onClick={handleLogout}
+          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
       </div>
-    </div>
+    </nav>
   );
-};
+}
 
 export default Navbar;

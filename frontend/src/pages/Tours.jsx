@@ -9,6 +9,8 @@ const Tours = () => {
   const [loadingId, setLoadingId] = useState(null);
   const [message, setMessage] = useState("");
   const [tours, setTours] = useState([]);
+  const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState("");
 
   // ✅ FIXED: inside component
   useEffect(() => {
@@ -59,9 +61,52 @@ setTimeout(() => {
   };
 
   return (
-    
-      <div style={{ padding: "20px" }}>
-      <h2>Available Tours</h2>
+      
+     <div style={{
+    maxWidth: "800px",
+    margin: "0 auto",
+    padding: "20px"
+  }}>
+      <h2 style={{ marginBottom: "15px" }}>Explore Tours</h2>
+      
+      <div style={{
+  display: "flex",
+  gap: "10px",
+  marginBottom: "20px"
+}}> 
+  <input
+    type="text"
+    placeholder="Search tours..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    style={{
+      flex: 1,
+      padding: "10px",
+      borderRadius: "5px",
+      border: "1px solid #ccc"
+    }}
+  />
+
+  <select
+    value={sortOrder}
+    onChange={(e) => setSortOrder(e.target.value)}
+    style={{
+      padding: "10px",
+      borderRadius: "5px",
+      border: "1px solid #ccc"
+    }}
+  >
+    <option value="">Sort</option>
+    <option value="low">Low → High</option>
+    <option value="high">High → Low</option>
+  </select>
+</div><div style={{
+  display: "flex",
+  gap: "10px",
+  marginBottom: "20px"
+}}>
+  
+</div>
       {message && (
   <p style={{
     color: message.includes("failed") ? "red" : "green",
@@ -71,34 +116,57 @@ setTimeout(() => {
   </p>
   
 )}
-      {tours.map((tour) => (
-        <div key={tour.id} style={{
-  border: "1px solid #ddd",
-  padding: "15px",
-  marginBottom: "15px",
-  borderRadius: "10px",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-}}>
-          <h3>{tour.name}</h3>
-          <p>Price: ₹{tour.price}</p>
+      {(() => {
+  let filtered = tours.filter((tour) =>
+    tour.name.toLowerCase().includes(search.toLowerCase())
+  );
 
-          <button
-             onClick={() => bookTour(tour.id)}
-  disabled={loadingId === tour.id}
-  style={{
-    marginTop: "10px",
-    padding: "8px 12px",
-    backgroundColor: "#007bff",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer"
-  }}
-          >
-            {loadingId === tour.id ? "Booking..." : "Book Now"}
-          </button>
-        </div>
-      ))}
+  if (sortOrder === "low") {
+    filtered.sort((a, b) => a.price - b.price);
+  } else if (sortOrder === "high") {
+    filtered.sort((a, b) => b.price - a.price);
+  }
+
+  return filtered.length === 0 ? (
+    <p>No tours found</p>
+  ) : (
+    filtered.map((tour) => (
+      <div
+        key={tour.id}
+        style={{
+  backgroundColor: "#fff",
+  padding: "20px",
+  marginBottom: "15px",
+  borderRadius: "12px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  transition: "0.2s"
+}}
+      >
+        <h3>{tour.name}</h3>
+        <p>Price: ₹{tour.price}</p>
+
+        <button
+          onClick={() =>
+  navigate("/payment", { state: { tour } })
+}
+          disabled={loadingId === tour.id}
+          style={{
+  marginTop: "10px",
+  padding: "10px 14px",
+  backgroundColor: "#007bff",
+  color: "#fff",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontWeight: "bold"
+}}
+        >
+          {loadingId === tour.id ? "Booking..." : "Book Now"}
+        </button>
+      </div>
+    ))
+  );
+})()}
     </div>
   
   );
