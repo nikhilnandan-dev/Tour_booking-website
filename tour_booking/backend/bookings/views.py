@@ -90,3 +90,58 @@ def create_booking(request):
         "message": "Booking successful",
         "booking_id": booking.id
     })
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def booking_stats(request):
+    total = Booking.objects.count()
+    active = Booking.objects.filter(is_cancelled=False).count()
+    cancelled = Booking.objects.filter(is_cancelled=True).count()
+    used = Booking.objects.filter(is_used=True).count()
+
+    return Response({
+        "total": total,
+        "active": active,
+        "cancelled": cancelled,
+        "used": used
+    })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def all_bookings(request):
+    bookings = Booking.objects.all().order_by('-created_at')
+    serializer = BookingSerializer(bookings, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_used(request, booking_id):
+    try:
+        booking = Booking.objects.get(id=booking_id)
+
+        # 🔥 FORCE UPDATE
+        booking.is_used = True
+        booking.save(update_fields=['is_used'])
+
+        # 🔥 VERIFY IMMEDIATELY
+        booking.refresh_from_db()
+
+        return Response({
+            "message": "Marked as used",
+            "id": booking.id,
+            "is_used": booking.is_used
+        })
+
+    except Booking.DoesNotExist:
+        return Response({"error": "Not found"}, status=404)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def admin_cancel(request, booking_id):
+    try:
+        booking = Booking.objects.get(id=booking_id)
+        booking.is_cancelled = True
+        booking.save()
+        return Response({"message": "Cancelled"})
+    except Booking.DoesNotExist:
+        return Response({"error": "Not found"}, status=404)

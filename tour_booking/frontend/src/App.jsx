@@ -7,6 +7,14 @@ import Navbar from "./components/Navbar";
 import { useLocation } from "react-router-dom";
 import Payment from "./pages/Payment";
 import Ticket from "./pages/Ticket";
+import AdminScan from "./pages/AdminScan";
+import AdminDashboard from "./pages/AdminDashboard";
+import Register from "./pages/Register";
+import ScanResult from "./pages/ScanResult";
+
+
+
+
 
 function App() {
   const location = useLocation();
@@ -20,6 +28,10 @@ function App() {
       <Route path="/payment" element={<Payment />} />
       <Route path="/scan" element={<Scan />} />
       <Route path="/ticket" element={<Ticket />} />
+      <Route path="/admin-scan" element={<AdminScan />} />
+      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/scan-result" element={<ScanResult />} />
     </Routes>
     </> 
   );

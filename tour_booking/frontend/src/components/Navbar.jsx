@@ -5,40 +5,53 @@ function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("is_staff"); // 🔥 also clear admin flag
     navigate("/");
   };
 
+  const isAdmin = localStorage.getItem("is_staff") === "true";
+
   return (
-    <nav className="bg-white shadow-md px-6 py-3 flex justify-between items-center">
-      
-      <h1 className="text-xl font-bold text-blue-600">
-        TourApp
-      </h1>
+  <nav className="bg-white shadow-md px-8 py-4 flex justify-between items-center sticky top-0 z-50">
 
-      <div className="flex gap-4 items-center">
-        <Link
-          to="/tours"
-          className="text-gray-700 hover:text-blue-600"
-        >
-          Tours
-        </Link>
+    {/* Logo */}
+    <h1
+      onClick={() => navigate("/tours")}
+      className="text-2xl font-extrabold text-blue-600 cursor-pointer tracking-wide"
+    >
+      TourApp
+    </h1>
 
-        <Link
-          to="/bookings"
-          className="text-gray-700 hover:text-blue-600"
-        >
-          My Bookings
-        </Link>
+    {/* Menu */}
+    <div className="flex gap-6 items-center">
 
+      <Link to="/tours" className="hover:text-blue-600 font-medium">
+        Tours
+      </Link>
+
+      <Link to="/bookings" className="hover:text-blue-600 font-medium">
+        My Bookings
+      </Link>
+
+      {localStorage.getItem("is_staff") === "true" && (
         <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+          onClick={() => navigate("/admin-dashboard")}
+          className="bg-purple-600 text-white px-4 py-1 rounded-lg hover:bg-purple-700 transition"
         >
-          Logout
+          Admin
         </button>
-      </div>
-    </nav>
-  );
+      )}
+
+      <button
+        onClick={handleLogout}
+        className="bg-red-500 text-white px-4 py-1 rounded-lg hover:bg-red-600 transition"
+      >
+        Logout
+      </button>
+
+    </div>
+  </nav>
+);
 }
 
 export default Navbar;

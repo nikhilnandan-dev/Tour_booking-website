@@ -43,10 +43,10 @@ def login_user(request):
             refresh['email'] = user.email
 
             return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
-
+    'refresh': str(refresh),
+    'access': str(refresh.access_token),
+    'is_staff': user.is_staff  # 🔥 THIS IS THE KEY
+})
         return Response({'error': 'Invalid credentials'}, status=401)
 
     except Exception as e:

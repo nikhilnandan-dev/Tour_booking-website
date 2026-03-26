@@ -13,6 +13,7 @@ class Booking(models.Model):
     booking_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, default='confirmed')
     created_at = models.DateTimeField(auto_now_add=True) 
+    is_used = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.booking_id:

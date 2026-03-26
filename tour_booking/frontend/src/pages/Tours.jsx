@@ -1,175 +1,99 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 
-const Tours = () => {
-
-  const navigate = useNavigate();
-  const [loadingId, setLoadingId] = useState(null);
-  const [message, setMessage] = useState("");
+function Tours() {
   const [tours, setTours] = useState([]);
-  const [search, setSearch] = useState("");
-  const [sortOrder, setSortOrder] = useState("");
 
-  // ✅ FIXED: inside component
   useEffect(() => {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    navigate("/");
-  }
-}, []);
-  useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/tours/")
-      .then(res => {
-        console.log(res.data);
+    const fetchTours = async () => {
+      try {
+        const res = await axios.get("http://127.0.0.1:8000/api/tours/");
         setTours(res.data);
-      })
-      .catch(err => console.log(err));
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchTours();
   }, []);
 
   const bookTour = async (tourId) => {
-    try {
-      setLoadingId(tourId);
+  try {
+    const token = localStorage.getItem("token");
 
-      const token = localStorage.getItem("token");
-
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/bookings/create/",
-        {
-          tour: tourId,
-          number_of_people: 1,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-     setMessage("Booking successful!");
-setTimeout(() => {
-  navigate("/bookings");
-}, 500);
-    } catch (err) {
-      console.log(err);
-      setMessage("Booking failed. Try again.");
-    } finally {
-      setLoadingId(null);
+    if (!token) {
+      alert("Please login first");
+      return;
     }
-  };
+
+    console.log("TOKEN:", token);
+
+    await axios.post(
+      "http://127.0.0.1:8000/api/bookings/create/",
+      {
+        tour: tourId,
+        number_of_people: 1,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    alert("Booking successful");
+
+  } catch (err) {
+    console.log("ERROR:", err.response?.data || err);
+    alert("Booking failed");
+  }
+};
 
   return (
+    <div className="bg-gray-100 min-h-screen">
       
-     <div style={{
-    maxWidth: "800px",
-    margin: "0 auto",
-    padding: "20px"
-  }}>
-      <h2 style={{ marginBottom: "15px" }}>Explore Tours</h2>
-      
-      <div style={{
-  display: "flex",
-  gap: "10px",
-  marginBottom: "20px"
-}}> 
-  <input
-    type="text"
-    placeholder="Search tours..."
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-    style={{
-      flex: 1,
-      padding: "10px",
-      borderRadius: "5px",
-      border: "1px solid #ccc"
-    }}
-  />
 
-  <select
-    value={sortOrder}
-    onChange={(e) => setSortOrder(e.target.value)}
-    style={{
-      padding: "10px",
-      borderRadius: "5px",
-      border: "1px solid #ccc"
-    }}
-  >
-    <option value="">Sort</option>
-    <option value="low">Low → High</option>
-    <option value="high">High → Low</option>
-  </select>
-</div><div style={{
-  display: "flex",
-  gap: "10px",
-  marginBottom: "20px"
-}}>
-  
-</div>
-      {message && (
-  <p style={{
-    color: message.includes("failed") ? "red" : "green",
-    marginBottom: "10px"
-  }}>
-    {message}
-  </p>
-  
-)}
-      {(() => {
-  let filtered = tours.filter((tour) =>
-    tour.name.toLowerCase().includes(search.toLowerCase())
-  );
+      <div className="max-w-6xl mx-auto p-6">
 
-  if (sortOrder === "low") {
-    filtered.sort((a, b) => a.price - b.price);
-  } else if (sortOrder === "high") {
-    filtered.sort((a, b) => b.price - a.price);
-  }
+        <h2 className="text-3xl font-bold mb-6">
+          Available Tours
+        </h2>
 
-  return filtered.length === 0 ? (
-    <p>No tours found</p>
-  ) : (
-    filtered.map((tour) => (
-      <div
-        key={tour.id}
-        style={{
-  backgroundColor: "#fff",
-  padding: "20px",
-  marginBottom: "15px",
-  borderRadius: "12px",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-  transition: "0.2s"
-}}
-      >
-        <h3>{tour.name}</h3>
-        <p>Price: ₹{tour.price}</p>
+        {/* 🔥 GRID */}
+        <div className="grid md:grid-cols-3 gap-6">
 
-        <button
-          onClick={() =>
-  navigate("/payment", { state: { tour } })
-}
-          disabled={loadingId === tour.id}
-          style={{
-  marginTop: "10px",
-  padding: "10px 14px",
-  backgroundColor: "#007bff",
-  color: "#fff",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-  fontWeight: "bold"
-}}
-        >
-          {loadingId === tour.id ? "Booking..." : "Book Now"}
-        </button>
+          {tours.map((tour) => (
+            <div
+              key={tour.id}
+              className="bg-white rounded-xl shadow-md hover:shadow-xl transition p-5"
+            >
+              <h3 className="text-lg font-bold mb-1">
+                {tour.name}
+              </h3>
+
+              <p className="text-gray-600 mb-2">
+                {tour.location || "Unknown location"}
+              </p>
+
+              <p className="text-blue-600 font-semibold mb-4">
+                ₹{tour.price}
+              </p>
+
+              <button
+                onClick={() => bookTour(tour.id)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full hover:bg-blue-700 transition"
+              >
+                Book Now
+              </button>
+            </div>
+          ))}
+
+        </div>
+
       </div>
-    ))
-  );
-})()}
     </div>
-  
   );
-};
+}
 
 export default Tours;

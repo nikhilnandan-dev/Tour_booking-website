@@ -18,10 +18,13 @@ const handleLogin = async () => {
     );
 
     localStorage.setItem("token", res.data.access);
+localStorage.setItem("is_staff", res.data.is_staff);
 
-    alert("Login successful");
-
-    navigate("/tours");   // 🔥 THIS IS IMPORTANT
+if (res.data.is_staff === true) {
+  navigate("/admin-dashboard");
+} else {
+  navigate("/tours");
+}
 
   } catch (err) {
     console.log(err);

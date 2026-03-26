@@ -38,49 +38,67 @@ function MyBookings() {
 
   // 🔥 FILTER + SORT (LATEST FIRST)
   const filteredBookings = bookings
-    .filter((b) =>
-      view === "active" ? !b.is_cancelled : b.is_cancelled
-    )
-    .sort((a, b) => {
-  const dateA = new Date(a.created_at).getTime();
-  const dateB = new Date(b.created_at).getTime();
-  return dateB - dateA;
-});
+  .filter((b) => {
+    if (view === "active") return !b.is_cancelled && !b.is_used;
+    if (view === "used") return b.is_used;
+    if (view === "cancelled") return b.is_cancelled;
+  })
+  .sort((a, b) => {
+    const dateA = new Date(a.created_at).getTime();
+    const dateB = new Date(b.created_at).getTime();
+    return dateB - dateA;
+  });
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto">
 
-        <h2 className="text-2xl font-bold mb-4">My Bookings</h2>
+        <h2 className="text-3xl font-bold mb-6">
+          My Bookings
+        </h2>
 
         {/* 🔥 TAB SWITCH */}
         <div className="flex gap-3 mb-6">
-          <button
-            onClick={() => setView("active")}
-            className={`px-4 py-2 rounded ${
-              view === "active"
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Active
-          </button>
 
-          <button
-            onClick={() => setView("cancelled")}
-            className={`px-4 py-2 rounded ${
-              view === "cancelled"
-                ? "bg-red-500 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Cancelled
-          </button>
-        </div>
+  <button
+    onClick={() => setView("active")}
+    className={`px-4 py-2 rounded-lg ${
+      view === "active"
+        ? "bg-blue-500 text-white"
+        : "bg-gray-200"
+    }`}
+  >
+    Active
+  </button>
+
+  <button
+    onClick={() => setView("used")}
+    className={`px-4 py-2 rounded-lg ${
+      view === "used"
+        ? "bg-gray-500 text-white"
+        : "bg-gray-200"
+    }`}
+  >
+    Used
+  </button>
+
+  <button
+    onClick={() => setView("cancelled")}
+    className={`px-4 py-2 rounded-lg ${
+      view === "cancelled"
+        ? "bg-red-500 text-white"
+        : "bg-gray-200"
+    }`}
+  >
+    Cancelled
+  </button>
+
+</div>
 
         {/* 🔥 BOOKINGS LIST */}
         {filteredBookings.length === 0 ? (
           <p className="text-gray-600">
-            No {view} bookings
+            No {view} bookings available.
           </p>
         ) : (
           <div className="grid gap-5">
@@ -88,22 +106,31 @@ function MyBookings() {
             {filteredBookings.map((b) => (
               <div
                 key={b.id}
-                className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition"
+                className="bg-white rounded-xl shadow-md p-5 flex justify-between items-center hover:shadow-lg transition"
               >
-                <h3 className="text-lg font-semibold mb-1">
-                  {b.tour?.name}
-                </h3>
 
-                <p className="text-gray-600">
-                  ₹{b.tour?.price}
-                </p>
+                {/* LEFT SIDE */}
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {b.tour?.name}
+                  </h3>
 
-                <p className="text-sm text-gray-500 mb-4">
-                  People: {b.number_of_people}
-                </p>
+                  <p className="text-gray-600">
+                    ₹{b.tour?.price}
+                  </p>
 
-                {/* 🔥 ACTIONS */}
-                <div className="flex gap-3">
+                  <p className="text-sm text-gray-500">
+                    People: {b.number_of_people}
+                  </p>
+
+                  {/* 🔥 Added date */}
+                  <p className="text-xs text-gray-400 mt-1">
+                    {new Date(b.created_at).toLocaleString()}
+                  </p>
+                </div>
+
+                {/* RIGHT SIDE */}
+                <div className="flex gap-3 items-center">
 
                   {b.is_cancelled ? (
                     <span className="text-red-500 font-semibold">
@@ -115,9 +142,9 @@ function MyBookings() {
                         onClick={() =>
                           navigate("/ticket", { state: { booking: b } })
                         }
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                        className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition"
                       >
-                        View Ticket
+                        Ticket
                       </button>
 
                       <button
@@ -144,7 +171,7 @@ function MyBookings() {
                             alert("Cancel failed");
                           }
                         }}
-                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                        className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
                       >
                         Cancel
                       </button>
@@ -152,6 +179,7 @@ function MyBookings() {
                   )}
 
                 </div>
+
               </div>
             ))}
 
