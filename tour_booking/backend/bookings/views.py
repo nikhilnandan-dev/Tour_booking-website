@@ -1,3 +1,6 @@
+import token
+import uuid
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -7,9 +10,9 @@ from tours.models import Tour
 
 
 @api_view(['GET'])
-def verify_booking(request, booking_id):
+def verify_booking(request, token):
     try:
-        booking = Booking.objects.get(id=booking_id)
+        booking = Booking.objects.get(qr_token=uuid.UUID(str(token)))
 
         # ❌ Cancelled
         if booking.is_cancelled:
@@ -117,7 +120,7 @@ def all_bookings(request):
 @permission_classes([IsAuthenticated])
 def mark_used(request, booking_id):
     try:
-        booking = Booking.objects.get(id=booking_id)
+        booking = Booking.objects.get(qr_token=token)  
 
         # 🔥 FORCE UPDATE
         booking.is_used = True

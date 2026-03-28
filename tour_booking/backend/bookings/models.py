@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from tours.models import Tour
 import uuid
 
+
+
 class Booking(models.Model):
     booking_id = models.CharField(max_length=20, unique=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -14,6 +16,7 @@ class Booking(models.Model):
     status = models.CharField(max_length=50, default='confirmed')
     created_at = models.DateTimeField(auto_now_add=True) 
     is_used = models.BooleanField(default=False)
+    qr_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def save(self, *args, **kwargs):
         if not self.booking_id:

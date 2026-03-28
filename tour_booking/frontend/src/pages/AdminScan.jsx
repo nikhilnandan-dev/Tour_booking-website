@@ -1,9 +1,81 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Html5Qrcode } from "html5-qrcode";
 
 function AdminScan() {
-  const [bookingId, setBookingId] = useState("");
+  const [token, setToken] = useState("");
+  const scannerRef = useRef(null);
+  useEffect(() => {
+  let html5QrCode;
+  let isStarted = false;
+
+  const startScanner = async () => {
+    try {
+      html5QrCode = new Html5Qrcode("reader");
+
+      const devices = await Html5Qrcode.getCameras();
+
+      if (devices && devices.length) {
+        const cameraId = devices[0].id;
+
+        await html5QrCode.start(
+          cameraId,
+          {
+            fps: 10,
+            qrbox: 250,
+          },
+          async (decodedText) => {
+            try {
+              const token = decodedText.split("/").filter(Boolean).pop();
+
+              const res = await axios.get(
+                `http://127.0.0.1:8000/api/bookings/verify/${token}/`
+              );
+
+              navigate("/scan-result", {
+                state: {
+                  valid: true,
+                  tour: res.data.tour,
+                  user: res.data.user,
+                  people: res.data.people,
+                },
+              });
+
+            } catch (err) {
+              const errorData = err.response?.data;
+
+              navigate("/scan-result", {
+                state: {
+                  valid: false,
+                  reason: errorData?.reason || "Invalid Ticket",
+                },
+              });
+            }
+
+            if (html5QrCode && isStarted) {
+              await html5QrCode.stop().catch(() => {});
+              isStarted = false;
+            }
+          }
+        );
+
+        isStarted = true;
+      }
+
+    } catch (err) {
+      console.log("Scanner error:", err);
+    }
+  };
+
+  startScanner();
+
+  return () => {
+    if (html5QrCode && isStarted) {
+      html5QrCode.stop().catch(() => {});
+    }
+  };
+}, []);
 
   // ✅ FIXED: proper hook placement
   const [history, setHistory] = useState(() => {
@@ -16,19 +88,19 @@ function AdminScan() {
   const navigate = useNavigate();
 
   const handleScan = async () => {
-    if (!bookingId) return;
+    if (!token) return;
 
     setLoading(true); // 🔥 start loading
 
     try {
       const res = await axios.get(
-        `http://127.0.0.1:8000/api/bookings/verify/${bookingId}/`
+        `http://127.0.0.1:8000/api/bookings/verify/${token}/`
       );
 
       // 🔥 Save history
       setHistory((prev) => {
         const updated = [
-          { id: bookingId, status: "valid" },
+          { id: token, status: "valid" },
           ...prev,
         ].slice(0, 10);
 
@@ -51,7 +123,7 @@ function AdminScan() {
       setHistory((prev) => {
         const updated = [
           {
-            id: bookingId,
+            id: token,
             status: errorData?.reason || "invalid",
           },
           ...prev,
@@ -70,7 +142,7 @@ function AdminScan() {
     }
 
     setLoading(false); // 🔥 stop loading
-    setBookingId("");
+    setToken("");
   };
 
   return (
@@ -81,11 +153,14 @@ function AdminScan() {
       </h2>
 
       {/* INPUT */}
+      <div className="flex flex-col items-center mb-6">
+  <div id="reader" className="w-80"></div>
+</div>  
       <input
         type="text"
         placeholder="Enter Booking ID"
-        value={bookingId}
-        onChange={(e) => setBookingId(e.target.value)}
+        value={token}
+        onChange={(e) => setToken(e.target.value)}
         className="border p-2 rounded w-64 text-center"
       />
 

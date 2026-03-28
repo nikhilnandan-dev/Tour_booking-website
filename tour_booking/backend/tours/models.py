@@ -10,6 +10,8 @@ class Tour(models.Model):
     image = models.ImageField(upload_to='tour_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     image = models.URLField(blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
+    rating = models.FloatField(default=4.5)
 
     def __str__(self):
         return self.name

@@ -40,7 +40,7 @@ function Ticket() {
       </div>
     );
   }
-
+console.log("BOOKING DATA:", booking);
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
 
@@ -106,7 +106,7 @@ function Ticket() {
         {/* QR CODE */}
         <div className="flex justify-center mb-6 p-3 bg-gray-50 rounded-xl">
           <QRCodeSVG
-            value={`http://127.0.0.1:8000/api/bookings/verify/${booking.id}/`}
+            value={`http://127.0.0.1:8000/api/bookings/verify/${booking.qr_token}/`}
             size={180}
           />
         </div>

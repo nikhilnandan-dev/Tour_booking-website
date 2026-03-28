@@ -21,7 +21,7 @@ audio.play().catch(() => {});
       </div>
     );
   }
-
+console.log("SCAN DATA:", data);  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
 
