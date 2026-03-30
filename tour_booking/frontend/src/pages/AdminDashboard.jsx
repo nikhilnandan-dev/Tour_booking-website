@@ -41,6 +41,23 @@ function AdminDashboard() {
       console.log(err);
     }
   };
+  const fetchDashboardData = async () => {
+  try {
+    const statsRes = await axios.get(
+      "http://127.0.0.1:8000/api/bookings/stats/"
+    );
+
+    const bookingsRes = await axios.get(
+      "http://127.0.0.1:8000/api/bookings/all/"
+    );
+
+    setStats(statsRes.data);
+    setBookings(bookingsRes.data);
+
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   useEffect(() => {
     const isStaff = localStorage.getItem("is_staff");
@@ -53,6 +70,10 @@ function AdminDashboard() {
 
     fetchData();
   }, []);
+  useEffect(() => {
+  fetchDashboardData();
+}, []); 
+  
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">

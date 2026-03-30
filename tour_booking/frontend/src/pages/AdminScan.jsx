@@ -4,179 +4,120 @@ import { useNavigate } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
 
 function AdminScan() {
-  const [token, setToken] = useState("");
-  const scannerRef = useRef(null);
-  useEffect(() => {
-  let html5QrCode;
-  let isStarted = false;
-
-  const startScanner = async () => {
-    try {
-      html5QrCode = new Html5Qrcode("reader");
-
-      const devices = await Html5Qrcode.getCameras();
-
-      if (devices && devices.length) {
-        const cameraId = devices[0].id;
-
-        await html5QrCode.start(
-          cameraId,
-          {
-            fps: 10,
-            qrbox: 250,
-          },
-          async (decodedText) => {
-            try {
-              const token = decodedText.split("/").filter(Boolean).pop();
-
-              const res = await axios.get(
-                `http://127.0.0.1:8000/api/bookings/verify/${token}/`
-              );
-
-              navigate("/scan-result", {
-                state: {
-                  valid: true,
-                  tour: res.data.tour,
-                  user: res.data.user,
-                  people: res.data.people,
-                },
-              });
-
-            } catch (err) {
-              const errorData = err.response?.data;
-
-              navigate("/scan-result", {
-                state: {
-                  valid: false,
-                  reason: errorData?.reason || "Invalid Ticket",
-                },
-              });
-            }
-
-            if (html5QrCode && isStarted) {
-              await html5QrCode.stop().catch(() => {});
-              isStarted = false;
-            }
-          }
-        );
-
-        isStarted = true;
-      }
-
-    } catch (err) {
-      console.log("Scanner error:", err);
-    }
-  };
-
-  startScanner();
-
-  return () => {
-    if (html5QrCode && isStarted) {
-      html5QrCode.stop().catch(() => {});
-    }
-  };
-}, []);
-
-  // ✅ FIXED: proper hook placement
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem("scan_history");
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
-  const handleScan = async () => {
-    if (!token) return;
+  const scannedRef = useRef(false);
 
-    setLoading(true); // 🔥 start loading
+  useEffect(() => {
+    let html5QrCode;
+    let isMounted = true;
 
-    try {
-      const res = await axios.get(
-        `http://127.0.0.1:8000/api/bookings/verify/${token}/`
-      );
+    const startScanner = async () => {
+      try {
+        html5QrCode = new Html5Qrcode("reader");
 
-      // 🔥 Save history
-      setHistory((prev) => {
-        const updated = [
-          { id: token, status: "valid" },
-          ...prev,
-        ].slice(0, 10);
+        const devices = await Html5Qrcode.getCameras();
 
-        localStorage.setItem("scan_history", JSON.stringify(updated));
-        return updated;
-      });
+        if (devices && devices.length && isMounted) {
+          const cameraId = devices[0].id;
 
-      navigate("/scan-result", {
-        state: {
-          valid: true,
-          tour: res.data.tour,
-          user: res.data.user,
-          people: res.data.people,
-        },
-      });
+          await html5QrCode.start(
+            cameraId,
+            { fps: 10, qrbox: 250 },
+            async (decodedText) => {
+              // 🔴 prevent multiple scans
+              if (scannedRef.current) return;
+              scannedRef.current = true;
 
-    } catch (err) {
-      const errorData = err.response?.data;
+              try {
+                const token = decodedText.split("/").filter(Boolean).pop();
 
-      setHistory((prev) => {
-        const updated = [
-          {
-            id: token,
-            status: errorData?.reason || "invalid",
-          },
-          ...prev,
-        ].slice(0, 10);
+                // 🔥 safe stop
+                try {
+                  if (html5QrCode.getState && html5QrCode.getState() === 2) {
+                    await html5QrCode.stop();
+                  }
+                } catch (e) {
+                  console.log("Stop skipped");
+                }
 
-        localStorage.setItem("scan_history", JSON.stringify(updated));
-        return updated;
-      });
+                const res = await axios.get(
+                  `http://127.0.0.1:8000/api/bookings/verify/${token}/`
+                );
 
-      navigate("/scan-result", {
-        state: {
-          valid: false,
-          reason: errorData?.reason || "Invalid Ticket",
-        },
-      });
-    }
+                // 🔥 history
+                setHistory((prev) => {
+                  const updated = [
+                    {
+                      id: token,
+                      status: res.data.valid ? "valid" : res.data.reason,
+                    },
+                    ...prev,
+                  ].slice(0, 10);
 
-    setLoading(false); // 🔥 stop loading
-    setToken("");
-  };
+                  localStorage.setItem("scan_history", JSON.stringify(updated));
+                  return updated;
+                });
+
+                navigate("/scan-result", {
+                  state: res.data,
+                });
+
+              } catch (err) {
+                const errorData = err.response?.data;
+
+                navigate("/scan-result", {
+                  state: {
+                    valid: false,
+                    reason: errorData?.reason || "Invalid QR Code",
+                  },
+                });
+              }
+            }
+          );
+        }
+      } catch (err) {
+        console.log("Scanner error:", err);
+      }
+    };
+
+    startScanner();
+
+    return () => {
+      isMounted = false;
+
+      if (html5QrCode) {
+        try {
+          if (html5QrCode.getState && html5QrCode.getState() === 2) {
+            html5QrCode.stop();
+          }
+        } catch (e) {
+          console.log("Cleanup stop skipped");
+        }
+      }
+    };
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
 
       <h2 className="text-2xl font-bold mb-6">
-        Admin Ticket Scanner
+        Scan Ticket
       </h2>
 
-      {/* INPUT */}
+      <p className="text-gray-500 mb-4 text-sm">
+        Point the camera at the QR code
+      </p>
+
+      {/* CAMERA */}
       <div className="flex flex-col items-center mb-6">
-  <div id="reader" className="w-80"></div>
-</div>  
-      <input
-        type="text"
-        placeholder="Enter Booking ID"
-        value={token}
-        onChange={(e) => setToken(e.target.value)}
-        className="border p-2 rounded w-64 text-center"
-      />
-
-      <button
-        onClick={handleScan}
-        className="bg-blue-600 text-white px-4 py-2 mt-3 rounded hover:bg-blue-700 transition active:scale-95"
-      >
-        Scan Ticket
-      </button>
-
-      {/* 🔥 LOADING */}
-      {loading && (
-        <p className="mt-3 text-gray-600 animate-pulse">
-          Verifying ticket...
-        </p>
-      )}
+        <div id="reader" className="w-80"></div>
+      </div>
 
       {/* HISTORY */}
       <div className="mt-8 w-full max-w-md">

@@ -17,7 +17,7 @@ function Ticket() {
     });
 
     const link = document.createElement("a");
-    link.download = `ticket-${booking.id}.png`;
+    link.download = `ticket-${booking.qr_token?.slice(0, 8).toUpperCase()}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
@@ -74,9 +74,11 @@ console.log("BOOKING DATA:", booking);
         <div className="text-sm text-gray-600 space-y-1 mb-6">
 
           <p>
-            <span className="font-semibold">Booking ID:</span> {booking.id}
+            <span className="font-semibold">Ticket Code:</span> {booking.qr_token?.slice(0, 8).toUpperCase()}
           </p>
-
+<p className="text-xs text-gray-400 mt-1">
+  Ref: {booking.id}
+</p>
           <p>
             <span className="font-semibold">People:</span> {booking.number_of_people}
           </p>
