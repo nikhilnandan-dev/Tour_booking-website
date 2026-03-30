@@ -1,3 +1,5 @@
+
+from rest_framework.response import Response
 from django.db import models
 from django.contrib.auth.models import User
 from tours.models import Tour

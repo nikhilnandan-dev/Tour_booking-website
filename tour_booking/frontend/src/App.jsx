@@ -27,11 +27,12 @@ function App() {
       <Route path="/bookings" element={<MyBookings />} />
       <Route path="/payment" element={<Payment />} />
       <Route path="/scan" element={<Scan />} />
-      <Route path="/ticket" element={<Ticket />} />
       <Route path="/admin-scan" element={<AdminScan />} />
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
       <Route path="/register" element={<Register />} />
       <Route path="/scan-result" element={<ScanResult />} />
+      <Route path="/ticket" element={<Ticket />} />
+      
     </Routes>
     </> 
   );

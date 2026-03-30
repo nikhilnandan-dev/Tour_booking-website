@@ -14,7 +14,6 @@ function AdminDashboard() {
 
   const [allBookings, setAllBookings] = useState([]);
 
-  // 🔥 MOVED OUTSIDE (IMPORTANT FIX)
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -26,8 +25,6 @@ function AdminDashboard() {
         }
       );
 
-      setStats(statsRes.data);
-
       const bookingsRes = await axios.get(
         "http://127.0.0.1:8000/api/bookings/all/",
         {
@@ -35,29 +32,13 @@ function AdminDashboard() {
         }
       );
 
+      setStats(statsRes.data);
       setAllBookings(bookingsRes.data);
 
     } catch (err) {
-      console.log(err);
+      console.log("Dashboard fetch error:", err);
     }
   };
-  const fetchDashboardData = async () => {
-  try {
-    const statsRes = await axios.get(
-      "http://127.0.0.1:8000/api/bookings/stats/"
-    );
-
-    const bookingsRes = await axios.get(
-      "http://127.0.0.1:8000/api/bookings/all/"
-    );
-
-    setStats(statsRes.data);
-    setBookings(bookingsRes.data);
-
-  } catch (err) {
-    console.log(err);
-  }
-};
 
   useEffect(() => {
     const isStaff = localStorage.getItem("is_staff");
@@ -70,10 +51,6 @@ function AdminDashboard() {
 
     fetchData();
   }, []);
-  useEffect(() => {
-  fetchDashboardData();
-}, []); 
-  
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -118,96 +95,49 @@ function AdminDashboard() {
               <tr>
                 <th className="p-3">Tour</th>
                 <th className="p-3">People</th>
-                <th className="p-3">Actions</th>
+                <th className="p-3">Status</th>
               </tr>
             </thead>
 
             <tbody>
-              {allBookings.map((b) => (
-                <tr key={b.id} className="border-t">
-
-                  <td className="p-3">{b.tour?.name}</td>
-                  <td className="p-3">{b.number_of_people}</td>
-
-                  <td className="p-3">
-
-                    {b.is_cancelled ? (
-                      <span className="text-red-500 font-semibold">
-                        Cancelled
-                      </span>
-                    ) : b.is_used ? (
-                      <span className="text-gray-500 font-semibold">
-                        Used
-                      </span>
-                    ) : (
-                      <div className="flex gap-2">
-
-                        <button
-                          onClick={async () => {
-                            try {
-                              const token = localStorage.getItem("token");
-
-                              await axios.post(
-                                `http://127.0.0.1:8000/api/bookings/mark-used/${b.id}/`,
-                                {},
-                                {
-                                  headers: {
-                                    Authorization: `Bearer ${token}`,
-                                  },
-                                }
-                              );
-
-                              alert("Marked as used");
-
-                              await fetchData(); // 🔥 FIX
-
-                            } catch (err) {
-                              console.log(err.response?.data || err);
-                              alert("Failed");
-                            }
-                          }}
-                          className="bg-gray-500 text-white px-3 py-1 rounded"
-                        >
-                          Mark Used
-                        </button>
-
-                        <button
-                          onClick={async () => {
-                            const confirmCancel = window.confirm("Cancel this booking?");
-                            if (!confirmCancel) return;
-
-                            try {
-                              const token = localStorage.getItem("token");
-
-                              await axios.post(
-                                `http://127.0.0.1:8000/api/bookings/admin-cancel/${b.id}/`,
-                                {},
-                                {
-                                  headers: {
-                                    Authorization: `Bearer ${token}`,
-                                  },
-                                }
-                              );
-
-                              await fetchData(); // 🔥 FIX
-
-                            } catch (err) {
-                              console.log(err.response?.data || err);
-                              alert("Cancel failed");
-                            }
-                          }}
-                          className="bg-red-500 text-white px-2 py-1 rounded"
-                        >
-                          Cancel
-                        </button>
-
-                      </div>
-                    )}
-
+              {allBookings.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="p-3 text-center">
+                    No bookings found
                   </td>
-
                 </tr>
-              ))}
+              ) : (
+                allBookings.map((b) => (
+                  <tr key={b.id} className="border-b">
+
+                    {/* ✅ FIXED TOUR DISPLAY */}
+                    <td className="p-3">
+                      <div className="font-semibold">
+                        {b.tour?.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        📍 {b.tour?.location}
+                      </div>
+                      <div className="text-sm">
+                        ₹{b.tour?.price}
+                      </div>
+                    </td>
+
+                    <td className="p-3">
+                      {b.number_of_people}
+                    </td>
+
+                    <td className="p-3">
+                      {b.is_cancelled
+                        ? "Cancelled"
+                        : b.is_used
+                        ? "Used"
+                        : "Active"}
+                    </td>
+
+                  </tr>
+                ))
+              )}
             </tbody>
 
           </table>

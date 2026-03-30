@@ -11,10 +11,17 @@ function Ticket() {
 
   const booking = location.state?.booking;
 
+  // ✅ FIXED DOWNLOAD (hide buttons temporarily)
   const downloadTicket = async () => {
+    const noPrint = document.getElementById("no-print");
+
+    if (noPrint) noPrint.style.display = "none";
+
     const canvas = await html2canvas(ticketRef.current, {
-      scale: 2, // 🔥 better quality
+      scale: 2,
     });
+
+    if (noPrint) noPrint.style.display = "flex";
 
     const link = document.createElement("a");
     link.download = `ticket-${booking.qr_token?.slice(0, 8).toUpperCase()}.png`;
@@ -26,25 +33,27 @@ function Ticket() {
     return (
       <div className="p-6">
         <p>No ticket data found</p>
-        <button onClick={() => {
-  const isAdmin = localStorage.getItem("is_staff") === "true";
+        <button
+          onClick={() => {
+            const isAdmin = localStorage.getItem("is_staff") === "true";
 
-  if (isAdmin) {
-    navigate("/admin-scan"); // or admin-dashboard
-  } else {
-    navigate("/tours");
-  }
-}}>
+            if (isAdmin) {
+              navigate("/admin-scan");
+            } else {
+              navigate("/tours");
+            }
+          }}
+        >
           Go Back
         </button>
       </div>
     );
   }
-console.log("BOOKING DATA:", booking);
+console.log("BOOKING:", booking);
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
 
-      {/* 🔥 ANIMATED CARD */}
+      {/* 🔥 TICKET CARD */}
       <motion.div
         ref={ticketRef}
         initial={{ opacity: 0, y: 40 }}
@@ -62,35 +71,42 @@ console.log("BOOKING DATA:", booking);
 
         {/* TOUR INFO */}
         <div className="mb-4">
-          <p className="text-lg font-semibold">
-            {booking.tour?.name}
-          </p>
-          <p className="text-gray-500">
-            ₹{booking.tour?.price}
-          </p>
-        </div>
+  <p className="text-lg font-semibold">
+    {booking.tour?.name}
+  </p>
+
+  <p className="text-gray-500">
+    📍 {booking.tour?.location || "Unknown Location"}
+  </p>
+
+  <p className="text-gray-500">
+    Price: ₹{booking.tour?.price || "N/A"}
+  </p>
+</div>
 
         {/* DETAILS */}
         <div className="text-sm text-gray-600 space-y-1 mb-6">
+          <p>
+            <span className="font-semibold">Ticket Code:</span>{" "}
+            {booking.qr_token?.slice(0, 8).toUpperCase()}
+          </p>
+
+          <p className="text-xs text-gray-400 mt-1">
+            Ref: {booking.id}
+          </p>
 
           <p>
-            <span className="font-semibold">Ticket Code:</span> {booking.qr_token?.slice(0, 8).toUpperCase()}
-          </p>
-<p className="text-xs text-gray-400 mt-1">
-  Ref: {booking.id}
-</p>
-          <p>
-            <span className="font-semibold">People:</span> {booking.number_of_people}
+            <span className="font-semibold">People:</span>{" "}
+            {booking.number_of_people}
           </p>
 
           <p>
             <span className="font-semibold">Date:</span>{" "}
             {new Date(booking.created_at).toLocaleString()}
           </p>
-
         </div>
 
-        {/* 🔥 STATUS */}
+        {/* STATUS */}
         {booking.is_cancelled ? (
           <p className="text-red-500 text-center font-semibold mb-4">
             ❌ Cancelled Ticket
@@ -105,7 +121,7 @@ console.log("BOOKING DATA:", booking);
           </p>
         )}
 
-        {/* QR CODE */}
+        {/* QR */}
         <div className="flex justify-center mb-6 p-3 bg-gray-50 rounded-xl">
           <QRCodeSVG
             value={`http://127.0.0.1:8000/api/bookings/verify/${booking.qr_token}/`}
@@ -113,40 +129,41 @@ console.log("BOOKING DATA:", booking);
           />
         </div>
 
-        {/* DOWNLOAD */}
-        <button
-          onClick={downloadTicket}
-          className="w-full bg-green-500 text-white py-2 rounded mt-4 hover:bg-green-600 transition active:scale-95"
-        >
-          Download Ticket
-        </button>
-
-        {/* FOOTER */}
+        {/* FOOTER TEXT */}
         <p className="text-center text-gray-400 text-xs mt-3">
           Show this QR at entry point
         </p>
 
-        {/* BACK BUTTON */}
-        <div className="flex gap-3 mt-6">
+        {/* 🔥 BUTTONS (hidden during download) */}
+        <div id="no-print" className="mt-6">
 
   <button
-    onClick={() => navigate("/bookings")}
-    className="w-full bg-gray-300 py-2 rounded"
+    onClick={downloadTicket}
+    className="w-full bg-green-500 text-white py-2 rounded mt-4 hover:bg-green-600 transition active:scale-95"
   >
-    My Bookings
+    Download Ticket
   </button>
 
-  <button
-    onClick={() => navigate("/tours")}
-    className="w-full bg-blue-500 text-white py-2 rounded"
-  >
-    Explore Tours
-  </button>
+  <div className="flex gap-3 mt-3">
 
-</div>  
+    <button
+      onClick={() => navigate("/bookings")}
+      className="w-full bg-gray-300 py-2 rounded"
+    >
+      My Bookings
+    </button>
 
+    <button
+      onClick={() => navigate("/tours")}
+      className="w-full bg-blue-500 text-white py-2 rounded"
+    >
+      Explore Tours
+    </button>
+
+  </div>
+
+</div>
       </motion.div>
-
     </div>
   );
 }

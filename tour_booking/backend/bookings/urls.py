@@ -1,5 +1,13 @@
 from django.urls import path
-from .views import verify_booking, create_booking, my_bookings, delete_booking, booking_stats, all_bookings
+from .views import (
+    verify_booking,
+    create_booking,
+    my_bookings,
+    delete_booking,
+    booking_stats,
+    all_bookings,
+    mark_used
+)
 
 urlpatterns = [
     path('verify/<uuid:token>/', verify_booking),
@@ -10,4 +18,6 @@ urlpatterns = [
     # 🔥 ADMIN
     path('stats/', booking_stats),
     path('all/', all_bookings),
+    path('mark-used/<int:booking_id>/', mark_used),
+    
 ]
