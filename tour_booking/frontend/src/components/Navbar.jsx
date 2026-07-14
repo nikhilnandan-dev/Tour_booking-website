@@ -19,7 +19,7 @@ function Navbar() {
       onClick={() => navigate("/tours")}
       className="text-2xl font-extrabold text-blue-600 cursor-pointer tracking-wide"
     >
-      TourApp
+      TourVerse
     </h1>
 
     {/* Menu */}
