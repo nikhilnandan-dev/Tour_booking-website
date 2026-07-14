@@ -100,7 +100,7 @@ tour_booking/
 
 ### Login Page
 
-![Login Page](screenshots/login.png)
+![Login Page](screenshots/login.png.png)
 
 ### Tour Listing
 
